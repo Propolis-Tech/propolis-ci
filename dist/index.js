@@ -30612,7 +30612,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issue)("endgroup");
     }
     exports2.endGroup = endGroup;
-    function group(name, fn) {
+    function group2(name, fn) {
       return __awaiter(this, void 0, void 0, function* () {
         startGroup(name);
         let result;
@@ -30624,7 +30624,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
         return result;
       });
     }
-    exports2.group = group;
+    exports2.group = group2;
     function saveState(name, value) {
       const filePath = process.env["GITHUB_STATE"] || "";
       if (filePath) {
@@ -34025,12 +34025,24 @@ async function main() {
       }
     );
     const testRuns = pollRes.data.testRuns;
-    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
-    changedRuns.forEach((t) => {
-      core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${t.status}`);
-      previousStatuses.set(t.runId, t.status);
-    });
     const statuses = testRuns.map((r) => r.status);
+    const counts = {
+      queued: statuses.filter((s) => s === "QUEUED").length,
+      running: statuses.filter((s) => s === "RUNNING").length,
+      completed: statuses.filter((s) => s === "COMPLETED").length,
+      failed: statuses.filter((s) => s === "FAILED").length
+    };
+    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
+    await core.group(
+      `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed}`,
+      async () => {
+        changedRuns.forEach((t) => {
+          const linkPart = ["COMPLETED", "FAILED"].includes(t.status) ? ` (${t.url})` : "";
+          core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${t.status}${linkPart}`);
+          previousStatuses.set(t.runId, t.status);
+        });
+      }
+    );
     const allDone = statuses.every(
       (s) => ["COMPLETED", "FAILED"].includes(s)
     );

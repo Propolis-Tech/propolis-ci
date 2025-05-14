@@ -82,7 +82,10 @@ async function main() {
       `🌀 Poll #${pollCount} – ⏳ ${counts.queued} | 🏃 ${counts.running} | ✅ ${counts.completed} | ❌ ${counts.failed}`,
       async () => {
         changedRuns.forEach((t) => {
-          core.info(`${statusIcon(t.status)} ${t.friendlyName} → ${t.status}`);
+          const linkPart = ['COMPLETED', 'FAILED'].includes(t.status)
+            ? ` (${t.url})`
+            : '';
+          core.info(`${statusIcon(t.status)} ${t.friendlyName} → ${t.status}${linkPart}`);
           previousStatuses.set(t.runId, t.status);
         });
       }
