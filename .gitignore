@@ -1,0 +1,17 @@
+# Node.js dependencies
+node_modules/
+
+# Build output
+dist/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Mac + VS Code junk
+.DS_Store
+.vscode/

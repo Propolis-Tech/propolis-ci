@@ -1,0 +1,11 @@
+name: 'Run Propolis Test Suite Batch'
+description: 'Triggers and polls a test batch using Propolis API'
+
+inputs:
+  apiKey:
+    description: 'Propolis API Key'
+    required: true
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
