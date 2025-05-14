@@ -66,14 +66,27 @@ async function main() {
     );
 
     const testRuns = pollRes.data.testRuns;
-    // Only emit log lines when a test changes status to reduce noise
-    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
-    changedRuns.forEach((t) => {
-      core.info(`${statusIcon(t.status)} ${t.friendlyName} → ${t.status}`);
-      previousStatuses.set(t.runId, t.status);
-    });
 
     const statuses = testRuns.map((r) => r.status);
+    const counts = {
+      queued: statuses.filter((s) => s === 'QUEUED').length,
+      running: statuses.filter((s) => s === 'RUNNING').length,
+      completed: statuses.filter((s) => s === 'COMPLETED').length,
+      failed: statuses.filter((s) => s === 'FAILED').length,
+    };
+
+    // Only emit log lines when a test changes status to reduce noise
+    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
+
+    await core.group(
+      `🌀 Poll #${pollCount} – ⏳ ${counts.queued} | 🏃 ${counts.running} | ✅ ${counts.completed} | ❌ ${counts.failed}`,
+      async () => {
+        changedRuns.forEach((t) => {
+          core.info(`${statusIcon(t.status)} ${t.friendlyName} → ${t.status}`);
+          previousStatuses.set(t.runId, t.status);
+        });
+      }
+    );
 
     const allDone = statuses.every((s: string) =>
       ['COMPLETED', 'FAILED'].includes(s)
