@@ -30562,7 +30562,7 @@ var require_core = __commonJS({
 Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     }
     exports2.getBooleanInput = getBooleanInput;
-    function setOutput(name, value) {
+    function setOutput2(name, value) {
       const filePath = process.env["GITHUB_OUTPUT"] || "";
       if (filePath) {
         return (0, file_command_1.issueFileCommand)("OUTPUT", (0, file_command_1.prepareKeyValueMessage)(name, value));
@@ -30570,7 +30570,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       process.stdout.write(os.EOL);
       (0, command_1.issueCommand)("set-output", { name }, (0, utils_1.toCommandValue)(value));
     }
-    exports2.setOutput = setOutput;
+    exports2.setOutput = setOutput2;
     function setCommandEcho(enabled) {
       (0, command_1.issue)("echo", enabled ? "on" : "off");
     }
@@ -30612,7 +30612,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issue)("endgroup");
     }
     exports2.endGroup = endGroup;
-    function group(name, fn) {
+    function group2(name, fn) {
       return __awaiter(this, void 0, void 0, function* () {
         startGroup(name);
         let result;
@@ -30624,7 +30624,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
         return result;
       });
     }
-    exports2.group = group;
+    exports2.group = group2;
     function saveState(name, value) {
       const filePath = process.env["GITHUB_STATE"] || "";
       if (filePath) {
@@ -33981,6 +33981,20 @@ var {
 // src/index.ts
 var core = __toESM(require_core());
 var sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+var statusIcon = (status) => {
+  switch (status) {
+    case "QUEUED":
+      return "\u23F3";
+    case "RUNNING":
+      return "\u{1F3C3}";
+    case "COMPLETED":
+      return "\u2705";
+    case "FAILED":
+      return "\u274C";
+    default:
+      return "";
+  }
+};
 async function main() {
   const apiKey = core.getInput("apiKey") || process.env.PROPOLIS_API_KEY;
   const baseURL = "https://api.propolis.tech";
@@ -33997,7 +34011,10 @@ async function main() {
   const batchRunId = triggerRes.data.batchRunId;
   if (!batchRunId) throw new Error("Missing batchRunId in trigger response");
   core.info(`Triggered batchRunId: ${batchRunId}`);
+  core.setOutput("batchRunId", batchRunId);
+  let pollCount = 0;
   while (true) {
+    pollCount += 1;
     const pollRes = await axios_default.get(
       `${baseURL}/api/testing/pollTestBatch/${batchRunId}`,
       {
@@ -34007,8 +34024,12 @@ async function main() {
       }
     );
     const testRuns = pollRes.data.testRuns;
+    await core.group(`\u{1F300} Poll #${pollCount} \u2013 ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`, async () => {
+      testRuns.forEach(
+        (t) => core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${t.status} (${t.url})`)
+      );
+    });
     const statuses = testRuns.map((r) => r.status);
-    core.info(`Statuses: ${statuses.join(", ")}`);
     const allDone = statuses.every(
       (s) => ["COMPLETED", "FAILED"].includes(s)
     );
@@ -34018,6 +34039,21 @@ async function main() {
     }
     const failedTests = testRuns.filter((test2) => test2.status === "FAILED");
     const passedTests = testRuns.filter((test2) => test2.status === "COMPLETED");
+    const summaryTable = testRuns.map((t) => [
+      { data: statusIcon(t.status), header: false },
+      t.friendlyName,
+      t.status,
+      `<a href="${t.url}">Logs</a>`
+    ]);
+    core.summary.addHeading("Propolis Test Batch Results", "2").addTable([
+      [
+        { data: " ", header: true },
+        { data: "Suite", header: true },
+        { data: "Status", header: true },
+        { data: "Link", header: true }
+      ],
+      ...summaryTable
+    ]).write();
     if (failedTests.length > 0) {
       let errorMessage = "\u274C The following test suites failed:\n";
       failedTests.forEach((test2) => {
