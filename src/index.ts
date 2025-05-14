@@ -75,13 +75,10 @@ async function main() {
       failed: statuses.filter((s) => s === 'FAILED').length,
     };
 
-    // Only emit log lines when a test changes status to reduce noise
-    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
-
     await core.group(
       `🌀 Poll #${pollCount} – ⏳ ${counts.queued} | 🏃 ${counts.running} | ✅ ${counts.completed} | ❌ ${counts.failed}`,
       async () => {
-        changedRuns.forEach((t) => {
+        testRuns.forEach((t) => {
           const linkPart = ['COMPLETED', 'FAILED'].includes(t.status)
             ? ` (${t.url})`
             : '';

@@ -34032,11 +34032,10 @@ async function main() {
       completed: statuses.filter((s) => s === "COMPLETED").length,
       failed: statuses.filter((s) => s === "FAILED").length
     };
-    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
     await core.group(
       `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed}`,
       async () => {
-        changedRuns.forEach((t) => {
+        testRuns.forEach((t) => {
           const linkPart = ["COMPLETED", "FAILED"].includes(t.status) ? ` (${t.url})` : "";
           core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${t.status}${linkPart}`);
           previousStatuses.set(t.runId, t.status);
