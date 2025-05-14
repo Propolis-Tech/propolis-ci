@@ -52,6 +52,7 @@ async function main() {
   core.setOutput('batchRunId', batchRunId);
 
   let pollCount = 0;
+  const previousStatuses = new Map<string, string>();
 
   while (true) {
     pollCount += 1;
@@ -65,11 +66,11 @@ async function main() {
     );
 
     const testRuns = pollRes.data.testRuns;
-    // Group each poll cycle in the logs so users can easily collapse them
-    await core.group(`🌀 Poll #${pollCount} – ${new Date().toLocaleTimeString()}`, async () => {
-      testRuns.forEach((t) =>
-        core.info(`${statusIcon(t.status)} ${t.friendlyName} → ${t.status} (${t.url})`)
-      );
+    // Only emit log lines when a test changes status to reduce noise
+    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
+    changedRuns.forEach((t) => {
+      core.info(`${statusIcon(t.status)} ${t.friendlyName} → ${t.status}`);
+      previousStatuses.set(t.runId, t.status);
     });
 
     const statuses = testRuns.map((r) => r.status);
@@ -82,10 +83,7 @@ async function main() {
       continue;
     }
 
-    const failedTests = testRuns.filter((test) => test.status === 'FAILED');
-    const passedTests = testRuns.filter((test) => test.status === 'COMPLETED');
-    
-    // Build a job summary (visible at the top of the Actions page)
+    // All tests have finished – build a job summary once
     const summaryTable = testRuns.map((t) => [
       { data: statusIcon(t.status), header: false },
       t.friendlyName,
@@ -93,7 +91,7 @@ async function main() {
       `<a href="${t.url}">Logs</a>`,
     ]);
 
-    core.summary
+    await core.summary
       .addHeading('Propolis Test Batch Results', '2')
       .addTable([
         [
@@ -106,6 +104,9 @@ async function main() {
       ])
       .write();
 
+    const failedTests = testRuns.filter((test) => test.status === 'FAILED');
+    const passedTests = testRuns.filter((test) => test.status === 'COMPLETED');
+    
     if (failedTests.length > 0) {
       let errorMessage = '❌ The following test suites failed:\n';
       failedTests.forEach((test) => {
