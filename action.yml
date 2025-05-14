@@ -1,4 +1,4 @@
-name: 'Run Propolis Test Suite Batch'
+name: 'Run Propolis QA'
 description: 'Triggers and polls a test batch using Propolis API'
 
 inputs:
