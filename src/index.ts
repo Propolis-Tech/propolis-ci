@@ -5,10 +5,27 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export type PollTestBatchResponse = {
   testRuns: Array<{
+    friendlyName: string;
     runId: string;
     status: string;
     url: string;
   }>;
+};
+
+// Map test status to emojis for more readable logs
+const statusIcon = (status: string): string => {
+  switch (status) {
+    case 'QUEUED':
+      return '⏳';
+    case 'RUNNING':
+      return '🏃';
+    case 'COMPLETED':
+      return '✅';
+    case 'FAILED':
+      return '❌';
+    default:
+      return '';
+  }
 };
 
 async function main() {
@@ -31,7 +48,13 @@ async function main() {
 
   core.info(`Triggered batchRunId: ${batchRunId}`);
 
+  // Expose the batchRunId for downstream steps if users need it
+  core.setOutput('batchRunId', batchRunId);
+
+  let pollCount = 0;
+
   while (true) {
+    pollCount += 1;
     const pollRes = await axios.get<PollTestBatchResponse>(
       `${baseURL}/api/testing/pollTestBatch/${batchRunId}`,
       {
@@ -42,8 +65,14 @@ async function main() {
     );
 
     const testRuns = pollRes.data.testRuns;
+    // Group each poll cycle in the logs so users can easily collapse them
+    await core.group(`🌀 Poll #${pollCount} – ${new Date().toLocaleTimeString()}`, async () => {
+      testRuns.forEach((t) =>
+        core.info(`${statusIcon(t.status)} ${t.friendlyName} → ${t.status} (${t.url})`)
+      );
+    });
+
     const statuses = testRuns.map((r) => r.status);
-    core.info(`Statuses: ${statuses.join(', ')}`);
 
     const allDone = statuses.every((s: string) =>
       ['COMPLETED', 'FAILED'].includes(s)
@@ -56,6 +85,27 @@ async function main() {
     const failedTests = testRuns.filter((test) => test.status === 'FAILED');
     const passedTests = testRuns.filter((test) => test.status === 'COMPLETED');
     
+    // Build a job summary (visible at the top of the Actions page)
+    const summaryTable = testRuns.map((t) => [
+      { data: statusIcon(t.status), header: false },
+      t.friendlyName,
+      t.status,
+      `<a href="${t.url}">Logs</a>`,
+    ]);
+
+    core.summary
+      .addHeading('Propolis Test Batch Results', '2')
+      .addTable([
+        [
+          { data: ' ', header: true },
+          { data: 'Suite', header: true },
+          { data: 'Status', header: true },
+          { data: 'Link', header: true },
+        ],
+        ...summaryTable,
+      ])
+      .write();
+
     if (failedTests.length > 0) {
       let errorMessage = '❌ The following test suites failed:\n';
       failedTests.forEach((test) => {
