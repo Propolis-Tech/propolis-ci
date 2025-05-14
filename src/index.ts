@@ -5,7 +5,7 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 async function main() {
   const apiKey = core.getInput('apiKey');
-  const baseURL = 'https://your-api.com'; // TODO: update to real URL
+  const baseURL = 'https://api.propolis.tech'; 
 
   const triggerRes = await axios.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
