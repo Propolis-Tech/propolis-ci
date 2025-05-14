@@ -30612,7 +30612,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issue)("endgroup");
     }
     exports2.endGroup = endGroup;
-    function group2(name, fn) {
+    function group(name, fn) {
       return __awaiter(this, void 0, void 0, function* () {
         startGroup(name);
         let result;
@@ -30624,7 +30624,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
         return result;
       });
     }
-    exports2.group = group2;
+    exports2.group = group;
     function saveState(name, value) {
       const filePath = process.env["GITHUB_STATE"] || "";
       if (filePath) {
@@ -34013,6 +34013,7 @@ async function main() {
   core.info(`Triggered batchRunId: ${batchRunId}`);
   core.setOutput("batchRunId", batchRunId);
   let pollCount = 0;
+  const previousStatuses = /* @__PURE__ */ new Map();
   while (true) {
     pollCount += 1;
     const pollRes = await axios_default.get(
@@ -34024,10 +34025,10 @@ async function main() {
       }
     );
     const testRuns = pollRes.data.testRuns;
-    await core.group(`\u{1F300} Poll #${pollCount} \u2013 ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`, async () => {
-      testRuns.forEach(
-        (t) => core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${t.status} (${t.url})`)
-      );
+    const changedRuns = testRuns.filter((t) => previousStatuses.get(t.runId) !== t.status);
+    changedRuns.forEach((t) => {
+      core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${t.status}`);
+      previousStatuses.set(t.runId, t.status);
     });
     const statuses = testRuns.map((r) => r.status);
     const allDone = statuses.every(
@@ -34037,15 +34038,13 @@ async function main() {
       await sleep(1e4);
       continue;
     }
-    const failedTests = testRuns.filter((test2) => test2.status === "FAILED");
-    const passedTests = testRuns.filter((test2) => test2.status === "COMPLETED");
     const summaryTable = testRuns.map((t) => [
       { data: statusIcon(t.status), header: false },
       t.friendlyName,
       t.status,
       `<a href="${t.url}">Logs</a>`
     ]);
-    core.summary.addHeading("Propolis Test Batch Results", "2").addTable([
+    await core.summary.addHeading("Propolis Test Batch Results", "2").addTable([
       [
         { data: " ", header: true },
         { data: "Suite", header: true },
@@ -34054,6 +34053,8 @@ async function main() {
       ],
       ...summaryTable
     ]).write();
+    const failedTests = testRuns.filter((test2) => test2.status === "FAILED");
+    const passedTests = testRuns.filter((test2) => test2.status === "COMPLETED");
     if (failedTests.length > 0) {
       let errorMessage = "\u274C The following test suites failed:\n";
       failedTests.forEach((test2) => {
