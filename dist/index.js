@@ -28,6 +28,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // node_modules/delayed-stream/lib/delayed_stream.js
 var require_delayed_stream = __commonJS({
@@ -30664,6 +30665,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
   }
 });
 
+// src/index.ts
+var index_exports = {};
+module.exports = __toCommonJS(index_exports);
+
 // node_modules/axios/lib/helpers/bind.js
 function bind(fn, thisArg) {
   return function wrap() {
@@ -33977,7 +33982,7 @@ var {
 var core = __toESM(require_core());
 var sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 async function main() {
-  const apiKey = core.getInput("apiKey");
+  const apiKey = core.getInput("apiKey") || process.env.PROPOLIS_API_KEY;
   const baseURL = "https://api.propolis.tech";
   const triggerRes = await axios_default.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
@@ -34001,7 +34006,8 @@ async function main() {
         }
       }
     );
-    const statuses = pollRes.data.testSuiteRuns.map((r) => r.status);
+    const testRuns = pollRes.data.testRuns;
+    const statuses = testRuns.map((r) => r.status);
     core.info(`Statuses: ${statuses.join(", ")}`);
     const allDone = statuses.every(
       (s) => ["COMPLETED", "FAILED"].includes(s)
@@ -34010,12 +34016,18 @@ async function main() {
       await sleep(1e4);
       continue;
     }
-    const anyFailed = statuses.includes("FAILED");
-    if (anyFailed) {
-      core.setFailed("\u274C One or more test suites failed.");
+    const failedTests = testRuns.filter((test2) => test2.status === "FAILED");
+    const passedTests = testRuns.filter((test2) => test2.status === "COMPLETED");
+    if (failedTests.length > 0) {
+      let errorMessage = "\u274C The following test suites failed:\n";
+      failedTests.forEach((test2) => {
+        errorMessage += `- Test ${test2.runId}: ${test2.url}
+`;
+      });
+      core.setFailed(errorMessage);
       return;
     }
-    core.info("\u2705 All test suites passed.");
+    core.info(`\u2705 All test suites passed. (${passedTests.length} tests completed successfully)`);
     return;
   }
 }
