@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: propolis-ai/propolis-ci@v1
+      - uses: Propolis-Tech/propolis-ci@v1
         with:
           apiKey: ${{ secrets.PROPOLIS_API_KEY }}
 ```
