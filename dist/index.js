@@ -33986,6 +33986,7 @@ var statusIcon = (status) => {
     case "QUEUED":
       return "\u23F3";
     case "RUNNING":
+    case "NEEDS_MANUAL_REVIEW":
       return "\u{1F3C3}";
     case "COMPLETED":
       return "\u2705";
@@ -34028,7 +34029,7 @@ async function main() {
     const statuses = testRuns.map((r) => r.status);
     const counts = {
       queued: statuses.filter((s) => s === "QUEUED").length,
-      running: statuses.filter((s) => s === "RUNNING").length,
+      running: statuses.filter((s) => s === "RUNNING" || s === "NEEDS_MANUAL_REVIEW").length,
       completed: statuses.filter((s) => s === "COMPLETED").length,
       failed: statuses.filter((s) => s === "FAILED").length
     };
@@ -34037,7 +34038,8 @@ async function main() {
       async () => {
         testRuns.forEach((t) => {
           const linkPart = ["COMPLETED", "FAILED"].includes(t.status) ? ` (${t.url})` : "";
-          core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${t.status}${linkPart}`);
+          const displayStatus = t.status === "NEEDS_MANUAL_REVIEW" ? "RUNNING" : t.status;
+          core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${displayStatus}${linkPart}`);
           previousStatuses.set(t.runId, t.status);
         });
       }
@@ -34049,12 +34051,15 @@ async function main() {
       await sleep(1e4);
       continue;
     }
-    const summaryTable = testRuns.map((t) => [
-      { data: statusIcon(t.status), header: false },
-      t.friendlyName,
-      t.status,
-      `<a href="${t.url}">Logs</a>`
-    ]);
+    const summaryTable = testRuns.map((t) => {
+      const displayStatus = t.status === "NEEDS_MANUAL_REVIEW" ? "RUNNING" : t.status;
+      return [
+        { data: statusIcon(t.status), header: false },
+        t.friendlyName,
+        displayStatus,
+        `<a href="${t.url}">Logs</a>`
+      ];
+    });
     await core.summary.addHeading("Propolis Test Batch Results", "2").addTable([
       [
         { data: " ", header: true },
