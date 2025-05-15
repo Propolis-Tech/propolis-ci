@@ -30592,10 +30592,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports2.error = error;
-    function warning(message, properties = {}) {
+    function warning2(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports2.warning = warning;
+    exports2.warning = warning2;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -34015,7 +34015,14 @@ async function main() {
   core.setOutput("batchRunId", batchRunId);
   let pollCount = 0;
   const previousStatuses = /* @__PURE__ */ new Map();
+  const timeoutMs = 40 * 60 * 1e3;
+  const startTime = Date.now();
   while (true) {
+    if (Date.now() - startTime > timeoutMs) {
+      core.warning("\u23F0 Timeout reached: Tests have been running for over 40 minutes");
+      core.setFailed("Test execution timed out after 40 minutes");
+      return;
+    }
     pollCount += 1;
     const pollRes = await axios_default.get(
       `${baseURL}/api/testing/pollTestBatch/${batchRunId}`,

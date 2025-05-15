@@ -54,8 +54,19 @@ async function main() {
 
   let pollCount = 0;
   const previousStatuses = new Map<string, string>();
+  
+  // Set timeout for 40 minutes (40 * 60 * 1000 ms)
+  const timeoutMs = 40 * 60 * 1000;
+  const startTime = Date.now();
 
   while (true) {
+    // Check if we've exceeded the timeout
+    if (Date.now() - startTime > timeoutMs) {
+      core.warning('⏰ Timeout reached: Tests have been running for over 40 minutes');
+      core.setFailed('Test execution timed out after 40 minutes');
+      return;
+    }
+    
     pollCount += 1;
     const pollRes = await axios.get<PollTestBatchResponse>(
       `${baseURL}/api/testing/pollTestBatch/${batchRunId}`,
