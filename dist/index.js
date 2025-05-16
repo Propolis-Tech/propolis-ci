@@ -34015,12 +34015,12 @@ async function main() {
   core.setOutput("batchRunId", batchRunId);
   let pollCount = 0;
   const previousStatuses = /* @__PURE__ */ new Map();
-  const timeoutMs = 40 * 60 * 1e3;
+  const timeoutMs = 15 * 60 * 1e3;
   const startTime = Date.now();
   while (true) {
     if (Date.now() - startTime > timeoutMs) {
-      core.warning("\u23F0 Timeout reached: Tests have been running for over 40 minutes");
-      core.setFailed("Test execution timed out after 40 minutes");
+      core.warning("\u23F0 Timeout reached: Tests have been running for over 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.");
+      core.setFailed("Test execution timed out after 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.");
       return;
     }
     pollCount += 1;
@@ -34081,7 +34081,7 @@ async function main() {
     if (failedTests.length > 0) {
       let errorMessage = "\u274C The following test suites failed:\n";
       failedTests.forEach((test2) => {
-        errorMessage += `- Test ${test2.runId}: ${test2.url}
+        errorMessage += `- Test ${test2.friendlyName}: ${test2.url}
 `;
       });
       core.setFailed(errorMessage);

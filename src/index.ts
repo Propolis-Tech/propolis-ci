@@ -55,15 +55,15 @@ async function main() {
   let pollCount = 0;
   const previousStatuses = new Map<string, string>();
   
-  // Set timeout for 40 minutes (40 * 60 * 1000 ms)
-  const timeoutMs = 40 * 60 * 1000;
+  // Set timeout for 15 minutes (15 * 60 * 1000 ms)
+  const timeoutMs = 15 * 60 * 1000;
   const startTime = Date.now();
 
   while (true) {
     // Check if we've exceeded the timeout
     if (Date.now() - startTime > timeoutMs) {
-      core.warning('⏰ Timeout reached: Tests have been running for over 40 minutes');
-      core.setFailed('Test execution timed out after 40 minutes');
+      core.warning('⏰ Timeout reached: Tests have been running for over 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.');
+      core.setFailed('Test execution timed out after 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.');
       return;
     }
     
@@ -139,7 +139,7 @@ async function main() {
     if (failedTests.length > 0) {
       let errorMessage = '❌ The following test suites failed:\n';
       failedTests.forEach((test) => {
-        errorMessage += `- Test ${test.runId}: ${test.url}\n`;
+        errorMessage += `- Test ${test.friendlyName}: ${test.url}\n`;
       });
       core.setFailed(errorMessage);
       return;
