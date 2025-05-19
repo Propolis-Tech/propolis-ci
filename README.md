@@ -12,7 +12,7 @@ jobs:
       - uses: Propolis-Tech/propolis-ci@v1
         with:
           apiKey: ${{ secrets.PROPOLIS_API_KEY }}
-          # baseUrl: "https://your-app-under-test.com" # Optional
+          baseUrl: "https://your-app-under-test.com" # Optional
 ```
 
 ## 🔧 Inputs
