@@ -31,7 +31,7 @@ const statusIcon = (status: string): string => {
 
 async function main() {
   const apiKey = core.getInput('apiKey') || process.env.PROPOLIS_API_KEY;
-  const baseURL = 'https://staging-backend-production-a46f.up.railway.app'; 
+  const baseURL = 'https://api.propolis.tech'; 
   const baseUrlForTest = core.getInput('baseUrl', { required: false }); 
 
   const triggerRes = await axios.post(
