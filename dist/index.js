@@ -33998,10 +33998,11 @@ var statusIcon = (status) => {
 };
 async function main() {
   const apiKey = core.getInput("apiKey") || process.env.PROPOLIS_API_KEY;
-  const baseURL = "https://api.propolis.tech";
+  const baseURL = "https://staging-backend-production-a46f.up.railway.app";
+  const baseUrlForTest = core.getInput("baseUrl", { required: false });
   const triggerRes = await axios_default.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
-    {},
+    { baseUrl: baseUrlForTest },
     {
       headers: {
         "X-API-Key": apiKey,

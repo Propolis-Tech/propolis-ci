@@ -5,6 +5,9 @@ inputs:
   apiKey:
     description: 'Propolis API Key'
     required: true
+  baseUrl:
+    description: 'Base URL for the test'
+    required: false
 
 runs:
   using: 'node20'
