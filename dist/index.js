@@ -34016,7 +34016,7 @@ async function main() {
   core.setOutput("batchRunId", batchRunId);
   let pollCount = 0;
   const previousStatuses = /* @__PURE__ */ new Map();
-  const timeoutMs = 15 * 60 * 1e3;
+  const timeoutMs = 20 * 60 * 1e3;
   const startTime = Date.now();
   while (true) {
     if (Date.now() - startTime > timeoutMs) {

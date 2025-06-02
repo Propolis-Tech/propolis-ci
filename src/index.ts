@@ -56,8 +56,8 @@ async function main() {
   let pollCount = 0;
   const previousStatuses = new Map<string, string>();
   
-  // Set timeout for 15 minutes (15 * 60 * 1000 ms)
-  const timeoutMs = 15 * 60 * 1000;
+  // Set timeout for 20 minutes (20 * 60 * 1000 ms)
+  const timeoutMs = 20 * 60 * 1000;
   const startTime = Date.now();
 
   while (true) {
