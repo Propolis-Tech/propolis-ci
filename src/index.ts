@@ -63,8 +63,8 @@ async function main() {
   while (true) {
     // Check if we've exceeded the timeout
     if (Date.now() - startTime > timeoutMs) {
-      core.warning('⏰ Timeout reached: Tests have been running for over 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.');
-      core.setFailed('Test execution timed out after 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.');
+      core.warning('⏰ Timeout reached: Tests have been running for over 20 minutes. Propolis has been alerted. You can see the results in the Propolis UI.');
+      core.setFailed('Test execution timed out after 20 minutes. Propolis has been alerted. You can see the results in the Propolis UI.');
       return;
     }
     
