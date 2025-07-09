@@ -33993,7 +33993,7 @@ var statusIcon = (status) => {
     case "FAILED":
       return "\u274C";
     case "AGENT_ERROR":
-      return "\u{1F916}\u274C";
+      return "\u{1F916}\u26A0\uFE0F";
     default:
       return "";
   }

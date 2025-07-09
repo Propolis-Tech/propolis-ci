@@ -25,7 +25,7 @@ const statusIcon = (status: string): string => {
     case 'FAILED':
       return '❌';
     case 'AGENT_ERROR':
-      return '🤖❌';
+      return '🤖⚠️';
     default:
       return '';
   }
