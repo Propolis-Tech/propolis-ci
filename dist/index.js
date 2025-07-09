@@ -33993,7 +33993,7 @@ var statusIcon = (status) => {
     case "FAILED":
       return "\u274C";
     case "AGENT_ERROR":
-      return "\u{1F916}\u26A0\uFE0F";
+      return "\u{1F916}\uFE0F";
     default:
       return "";
   }
@@ -34045,7 +34045,7 @@ async function main() {
       agentError: statuses.filter((s) => s === "AGENT_ERROR").length
     };
     await core.group(
-      `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed} | \u{1F916}\u26A0\uFE0F ${counts.agentError}`,
+      `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed} | \u{1F916}\uFE0F ${counts.agentError}`,
       async () => {
         testRuns.forEach((t) => {
           const linkPart = ["COMPLETED", "FAILED", "AGENT_ERROR"].includes(t.status) ? ` (${t.url})` : "";

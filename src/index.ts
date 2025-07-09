@@ -25,7 +25,7 @@ const statusIcon = (status: string): string => {
     case 'FAILED':
       return '❌';
     case 'AGENT_ERROR':
-      return '🤖⚠️';
+      return '🤖️';
     default:
       return '';
   }
@@ -92,7 +92,7 @@ async function main() {
     };
 
     await core.group(
-      `🌀 Poll #${pollCount} – ⏳ ${counts.queued} | 🏃 ${counts.running} | ✅ ${counts.completed} | ❌ ${counts.failed} | 🤖⚠️ ${counts.agentError}`,
+      `🌀 Poll #${pollCount} – ⏳ ${counts.queued} | 🏃 ${counts.running} | ✅ ${counts.completed} | ❌ ${counts.failed} | 🤖️ ${counts.agentError}`,
       async () => {
         testRuns.forEach((t) => {
           const linkPart = ['COMPLETED', 'FAILED', 'AGENT_ERROR'].includes(t.status)
