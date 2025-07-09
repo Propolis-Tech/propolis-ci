@@ -24,6 +24,8 @@ const statusIcon = (status: string): string => {
       return '✅';
     case 'FAILED':
       return '❌';
+    case 'AGENT_ERROR':
+      return '🤖❌';
     default:
       return '';
   }
@@ -86,13 +88,14 @@ async function main() {
       running: statuses.filter((s) => s === 'RUNNING' || s === 'NEEDS_MANUAL_REVIEW').length,
       completed: statuses.filter((s) => s === 'COMPLETED').length,
       failed: statuses.filter((s) => s === 'FAILED').length,
+      agentError: statuses.filter((s) => s === 'AGENT_ERROR').length,
     };
 
     await core.group(
-      `🌀 Poll #${pollCount} – ⏳ ${counts.queued} | 🏃 ${counts.running} | ✅ ${counts.completed} | ❌ ${counts.failed}`,
+      `🌀 Poll #${pollCount} – ⏳ ${counts.queued} | 🏃 ${counts.running} | ✅ ${counts.completed} | ❌ ${counts.failed} | 🤖❌ ${counts.agentError}`,
       async () => {
         testRuns.forEach((t) => {
-          const linkPart = ['COMPLETED', 'FAILED'].includes(t.status)
+          const linkPart = ['COMPLETED', 'FAILED', 'AGENT_ERROR'].includes(t.status)
             ? ` (${t.url})`
             : '';
           const displayStatus = t.status === 'NEEDS_MANUAL_REVIEW' ? 'RUNNING' : t.status;
@@ -103,7 +106,7 @@ async function main() {
     );
 
     const allDone = statuses.every((s: string) =>
-      ['COMPLETED', 'FAILED'].includes(s)
+      ['COMPLETED', 'FAILED', 'AGENT_ERROR'].includes(s)
     );
     if (!allDone) {
       await sleep(10000);
@@ -134,7 +137,7 @@ async function main() {
       ])
       .write();
 
-    const failedTests = testRuns.filter((test) => test.status === 'FAILED');
+    const failedTests = testRuns.filter((test) => test.status === 'FAILED' || test.status === 'AGENT_ERROR');
     const passedTests = testRuns.filter((test) => test.status === 'COMPLETED');
     
     if (failedTests.length > 0) {
