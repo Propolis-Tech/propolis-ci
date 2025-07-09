@@ -33992,6 +33992,8 @@ var statusIcon = (status) => {
       return "\u2705";
     case "FAILED":
       return "\u274C";
+    case "AGENT_ERROR":
+      return "\u{1F916}\u26A0\uFE0F";
     default:
       return "";
   }
@@ -34020,8 +34022,8 @@ async function main() {
   const startTime = Date.now();
   while (true) {
     if (Date.now() - startTime > timeoutMs) {
-      core.warning("\u23F0 Timeout reached: Tests have been running for over 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.");
-      core.setFailed("Test execution timed out after 15 minutes. Propolis has been alerted. You can see the results in the Propolis UI.");
+      core.warning("\u23F0 Timeout reached: Tests have been running for over 20 minutes. Propolis has been alerted. You can see the results in the Propolis UI.");
+      core.setFailed("Test execution timed out after 20 minutes. Propolis has been alerted. You can see the results in the Propolis UI.");
       return;
     }
     pollCount += 1;
@@ -34039,13 +34041,14 @@ async function main() {
       queued: statuses.filter((s) => s === "QUEUED").length,
       running: statuses.filter((s) => s === "RUNNING" || s === "NEEDS_MANUAL_REVIEW").length,
       completed: statuses.filter((s) => s === "COMPLETED").length,
-      failed: statuses.filter((s) => s === "FAILED").length
+      failed: statuses.filter((s) => s === "FAILED").length,
+      agentError: statuses.filter((s) => s === "AGENT_ERROR").length
     };
     await core.group(
-      `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed}`,
+      `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed} | \u{1F916}\u274C ${counts.agentError}`,
       async () => {
         testRuns.forEach((t) => {
-          const linkPart = ["COMPLETED", "FAILED"].includes(t.status) ? ` (${t.url})` : "";
+          const linkPart = ["COMPLETED", "FAILED", "AGENT_ERROR"].includes(t.status) ? ` (${t.url})` : "";
           const displayStatus = t.status === "NEEDS_MANUAL_REVIEW" ? "RUNNING" : t.status;
           core.info(`${statusIcon(t.status)} ${t.friendlyName} \u2192 ${displayStatus}${linkPart}`);
           previousStatuses.set(t.runId, t.status);
@@ -34053,7 +34056,7 @@ async function main() {
       }
     );
     const allDone = statuses.every(
-      (s) => ["COMPLETED", "FAILED"].includes(s)
+      (s) => ["COMPLETED", "FAILED", "AGENT_ERROR"].includes(s)
     );
     if (!allDone) {
       await sleep(1e4);
@@ -34077,7 +34080,7 @@ async function main() {
       ],
       ...summaryTable
     ]).write();
-    const failedTests = testRuns.filter((test2) => test2.status === "FAILED");
+    const failedTests = testRuns.filter((test2) => test2.status === "FAILED" || test2.status === "AGENT_ERROR");
     const passedTests = testRuns.filter((test2) => test2.status === "COMPLETED");
     if (failedTests.length > 0) {
       let errorMessage = "\u274C The following test suites failed:\n";
