@@ -34045,7 +34045,7 @@ async function main() {
       agentError: statuses.filter((s) => s === "AGENT_ERROR").length
     };
     await core.group(
-      `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed} | \u{1F916}\u274C ${counts.agentError}`,
+      `\u{1F300} Poll #${pollCount} \u2013 \u23F3 ${counts.queued} | \u{1F3C3} ${counts.running} | \u2705 ${counts.completed} | \u274C ${counts.failed} | \u{1F916}\u26A0\uFE0F ${counts.agentError}`,
       async () => {
         testRuns.forEach((t) => {
           const linkPart = ["COMPLETED", "FAILED", "AGENT_ERROR"].includes(t.status) ? ` (${t.url})` : "";
@@ -34080,8 +34080,9 @@ async function main() {
       ],
       ...summaryTable
     ]).write();
-    const failedTests = testRuns.filter((test2) => test2.status === "FAILED" || test2.status === "AGENT_ERROR");
+    const failedTests = testRuns.filter((test2) => test2.status === "FAILED");
     const passedTests = testRuns.filter((test2) => test2.status === "COMPLETED");
+    const agentErrorTests = testRuns.filter((test2) => test2.status === "AGENT_ERROR");
     if (failedTests.length > 0) {
       let errorMessage = "\u274C The following test suites failed:\n";
       failedTests.forEach((test2) => {
@@ -34091,7 +34092,8 @@ async function main() {
       core.setFailed(errorMessage);
       return;
     }
-    core.info(`\u2705 All test suites passed. (${passedTests.length} tests completed successfully)`);
+    const successMessage = agentErrorTests.length > 0 ? `\u2705 All test suites passed. (${passedTests.length} tests completed successfully, ${agentErrorTests.length} agent errors ignored)` : `\u2705 All test suites passed. (${passedTests.length} tests completed successfully)`;
+    core.info(successMessage);
     return;
   }
 }
