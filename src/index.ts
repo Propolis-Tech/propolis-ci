@@ -34,7 +34,8 @@ const statusIcon = (status: string): string => {
 async function main() {
   const apiKey = core.getInput('apiKey') || process.env.PROPOLIS_API_KEY;
   const baseURL = 'https://api.propolis.tech'; 
-  const baseUrlForTest = core.getInput('baseUrl', { required: false }); 
+  const baseUrlForTest = core.getInput('baseUrl', { required: false });
+  const nonBlocking = core.getBooleanInput('nonBlocking', { required: false }); 
 
   const triggerRes = await axios.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
@@ -54,6 +55,12 @@ async function main() {
 
   // Expose the batchRunId for downstream steps if users need it
   core.setOutput('batchRunId', batchRunId);
+
+  // If nonBlocking is enabled, exit immediately after triggering
+  if (nonBlocking) {
+    core.info('🚀 Non-blocking mode: Tests triggered successfully. Not polling for results.');
+    return;
+  }
 
   let pollCount = 0;
   const previousStatuses = new Map<string, string>();
