@@ -8,6 +8,10 @@ inputs:
   baseUrl:
     description: 'Base URL for the test'
     required: false
+  nonBlocking:
+    description: 'If true, triggers tests without polling for results or affecting build status'
+    required: false
+    default: 'false'
 
 runs:
   using: 'node20'

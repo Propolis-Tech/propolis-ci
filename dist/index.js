@@ -30550,7 +30550,7 @@ var require_core = __commonJS({
       return inputs.map((input) => input.trim());
     }
     exports2.getMultilineInput = getMultilineInput;
-    function getBooleanInput(name, options) {
+    function getBooleanInput2(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
       const val = getInput2(name, options);
@@ -30561,7 +30561,7 @@ var require_core = __commonJS({
       throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}
 Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     }
-    exports2.getBooleanInput = getBooleanInput;
+    exports2.getBooleanInput = getBooleanInput2;
     function setOutput2(name, value) {
       const filePath = process.env["GITHUB_OUTPUT"] || "";
       if (filePath) {
@@ -34002,6 +34002,7 @@ async function main() {
   const apiKey = core.getInput("apiKey") || process.env.PROPOLIS_API_KEY;
   const baseURL = "https://api.propolis.tech";
   const baseUrlForTest = core.getInput("baseUrl", { required: false });
+  const nonBlocking = core.getBooleanInput("nonBlocking", { required: false });
   const triggerRes = await axios_default.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
     { baseUrl: baseUrlForTest },
@@ -34016,6 +34017,10 @@ async function main() {
   if (!batchRunId) throw new Error("Missing batchRunId in trigger response");
   core.info(`Triggered batchRunId: ${batchRunId}`);
   core.setOutput("batchRunId", batchRunId);
+  if (nonBlocking) {
+    core.info("\u{1F680} Non-blocking mode: Tests triggered successfully. Not polling for results.");
+    return;
+  }
   let pollCount = 0;
   const previousStatuses = /* @__PURE__ */ new Map();
   const timeoutMs = 20 * 60 * 1e3;
