@@ -83,7 +83,7 @@ async function main() {
 
   const triggerRes = await axios.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
-    { 
+    {
       baseUrl: baseUrlForTest,
       repositoryContext: repoContext
     },
