@@ -12,6 +12,13 @@ export type PollTestBatchResponse = {
   }>;
 };
 
+export type RepositoryContext = {
+  commitSha?: string;
+  repositoryUrl?: string;
+  branch?: string;
+  commitMessage?: string;
+};
+
 // Map test status to emojis for more readable logs
 const statusIcon = (status: string): string => {
   switch (status) {
@@ -31,15 +38,55 @@ const statusIcon = (status: string): string => {
   }
 };
 
+// Capture repository context from GitHub Actions environment variables and inputs
+const captureRepositoryContext = (): RepositoryContext => {
+  // Use action inputs as overrides, fall back to environment variables
+  const commitSha = core.getInput('commitSha', { required: false }) || process.env.GITHUB_SHA;
+  
+  const repositoryUrl = core.getInput('repositoryUrl', { required: false }) || 
+    (process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY 
+      ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`
+      : undefined);
+  
+  // Extract branch name from GITHUB_REF (e.g., "refs/heads/main" -> "main")
+  const branch = core.getInput('branch', { required: false }) || 
+    process.env.GITHUB_REF?.replace(/^refs\/heads\//, '') || undefined;
+  
+  // Get commit message from input or environment variable
+  const commitMessage = core.getInput('commitMessage', { required: false }) || 
+    process.env.COMMIT_MESSAGE || 
+    process.env.GITHUB_EVENT_HEAD_COMMIT_MESSAGE;
+
+  return {
+    commitSha,
+    repositoryUrl,
+    branch,
+    commitMessage,
+  };
+};
+
 async function main() {
   const apiKey = core.getInput('apiKey') || process.env.PROPOLIS_API_KEY;
   const baseURL = 'https://api.propolis.tech'; 
   const baseUrlForTest = core.getInput('baseUrl', { required: false });
   const nonBlocking = core.getBooleanInput('nonBlocking', { required: false }); 
 
+  // Capture repository context
+  const repoContext = captureRepositoryContext();
+  
+  // Log captured context for debugging
+  core.info(`📋 Repository Context:`);
+  if (repoContext.commitSha) core.info(`  Commit SHA: ${repoContext.commitSha}`);
+  if (repoContext.repositoryUrl) core.info(`  Repository: ${repoContext.repositoryUrl}`);
+  if (repoContext.branch) core.info(`  Branch: ${repoContext.branch}`);
+  if (repoContext.commitMessage) core.info(`  Commit Message: ${repoContext.commitMessage}`);
+
   const triggerRes = await axios.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
-    { baseUrl: baseUrlForTest },
+    {
+      baseUrl: baseUrlForTest,
+      repositoryContext: repoContext
+    },
     {
       headers: {
         'X-API-Key': apiKey,

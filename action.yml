@@ -12,6 +12,18 @@ inputs:
     description: 'If true, triggers tests without polling for results or affecting build status'
     required: false
     default: 'false'
+  commitSha:
+    description: 'Override commit SHA (defaults to GITHUB_SHA)'
+    required: false
+  repositoryUrl:
+    description: 'Override repository URL (defaults to GitHub repository URL)'
+    required: false
+  branch:
+    description: 'Override branch name (defaults to current branch)'
+    required: false
+  commitMessage:
+    description: 'Override commit message (defaults to commit message from environment)'
+    required: false
 
 runs:
   using: 'node20'
