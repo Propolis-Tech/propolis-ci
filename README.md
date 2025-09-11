@@ -22,7 +22,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: Propolis-Tech/propolis-ci@v1
+      - uses: Propolis-Tech/propolis-ci@main
         with:
           apiKey: ${{ secrets.PROPOLIS_API_KEY }}
           baseUrl: "https://your-app-under-test.com" # Optional
