@@ -27,7 +27,10 @@ jobs:
           apiKey: ${{ secrets.PROPOLIS_API_KEY }}
           baseUrl: "https://your-app-under-test.com" # Optional
           nonBlocking: true # Just trigger tests, don't wait for results
+          delaySeconds: 30 # Optional: wait before triggering tests
 ```
+
+Need to pause before triggering (e.g., to let a deploy finish)? Add `delaySeconds: <seconds>` to either mode.
 
 ## 🔧 Inputs
 
@@ -36,6 +39,7 @@ jobs:
 | apiKey        | Your Propolis API key                                                 | ✅ Yes   | -       |
 | baseUrl       | URL of the application to test                                        | ❌ No    | -       |
 | nonBlocking   | Skip polling for results and don't affect build status (trigger only) | ❌ No    | false   |
+| delaySeconds  | Wait this many seconds before triggering the test run                 | ❌ No    | 0       |
 
 ## ✅ What It Does
 

@@ -34015,12 +34015,21 @@ async function main() {
   const baseURL = "https://api.propolis.tech";
   const baseUrlForTest = core.getInput("baseUrl", { required: false });
   const nonBlocking = core.getBooleanInput("nonBlocking", { required: false });
+  const delaySecondsInput = core.getInput("delaySeconds", { required: false });
+  const delaySeconds = delaySecondsInput ? Number(delaySecondsInput) : 0;
+  if (Number.isNaN(delaySeconds) || delaySeconds < 0) {
+    throw new Error("delaySeconds must be a non-negative number");
+  }
   const repoContext = captureRepositoryContext();
-  core.info(`\u{1F4CB} Repository Context:`);
+  core.info(`Repository Context:`);
   if (repoContext.commitSha) core.info(`  Commit SHA: ${repoContext.commitSha}`);
   if (repoContext.repositoryUrl) core.info(`  Repository: ${repoContext.repositoryUrl}`);
   if (repoContext.branch) core.info(`  Branch: ${repoContext.branch}`);
   if (repoContext.commitMessage) core.info(`  Commit Message: ${repoContext.commitMessage}`);
+  if (delaySeconds > 0) {
+    core.info(`Delaying start by ${delaySeconds} second${delaySeconds === 1 ? "" : "s"}...`);
+    await sleep(delaySeconds * 1e3);
+  }
   const triggerRes = await axios_default.post(
     `${baseURL}/api/testing/runAllTestsInBatch`,
     {
