@@ -24,6 +24,10 @@ inputs:
   commitMessage:
     description: 'Override commit message (defaults to commit message from environment)'
     required: false
+  delaySeconds:
+    description: 'Optional delay (in seconds) before triggering the test run'
+    required: false
+    default: '0'
 
 runs:
   using: 'node20'
